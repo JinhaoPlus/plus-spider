@@ -5,33 +5,14 @@ import org.apache.http.cookie.Cookie;
 
 import java.util.List;
 
-public class Response {
+public class Response extends EndPoint {
     private int statusCode;
-    private ResponseStatus responseStatus = ResponseStatus.SUCCESS;
     private String resultText;
     private Request request;
     private List<Cookie> cookies;
     private List<Header> headers;
 
-    public Response(ResponseStatus responseStatus, Request request) {
-        this.responseStatus = responseStatus;
-        this.request = request;
-    }
-
-    public Response(int statusCode, Request request) {
-        this.statusCode = statusCode;
-        this.request = request;
-    }
-
-    public Response(int statusCode, ResponseStatus responseStatus, Request request) {
-        this.statusCode = statusCode;
-        this.responseStatus = responseStatus;
-        this.request = request;
-    }
-
-    public Response(int statusCode, String resultText, Request request) {
-        this.statusCode = statusCode;
-        this.resultText = resultText;
+    public Response(Request request) {
         this.request = request;
     }
 
@@ -41,15 +22,6 @@ public class Response {
 
     public Response statusCode(int statusCode) {
         this.statusCode = statusCode;
-        return this;
-    }
-
-    public ResponseStatus responseStatus() {
-        return responseStatus;
-    }
-
-    public Response responseStatus(ResponseStatus responseStatus) {
-        this.responseStatus = responseStatus;
         return this;
     }
 

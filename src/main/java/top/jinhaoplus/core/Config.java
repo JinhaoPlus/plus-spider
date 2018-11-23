@@ -1,12 +1,15 @@
 package top.jinhaoplus.core;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import java.util.List;
 import java.util.Map;
 
 public class Config {
     private String schedulerFactoryClass;
     private String downloaderFactoryClass;
+    private List<String> downloaderFilterClasses = Lists.newArrayList();
     private String parserFactoryClass;
     private String pipelineFactoryClass;
     private String interval;
@@ -21,6 +24,7 @@ public class Config {
     private void defaultConfig() {
         schedulerFactoryClass = "top.jinhaoplus.scheduler.DefaultSchedulerFactory";
         downloaderFactoryClass = "top.jinhaoplus.downloader.DefaultDownloaderFactory";
+        downloaderFilterClasses = Lists.newArrayList("top.jinhaoplus.downloader.RetryDownloadFilter");
         parserFactoryClass = "top.jinhaoplus.parser.DefaultParserFactory";
         pipelineFactoryClass = "top.jinhaoplus.pipeline.DefaultPipelineFactory";
         interval = "100";
@@ -43,6 +47,15 @@ public class Config {
 
     public Config downloaderFactoryClass(String downloaderConfig) {
         this.downloaderFactoryClass = downloaderConfig;
+        return this;
+    }
+
+    public List<String> downloaderFilterClasses() {
+        return downloaderFilterClasses;
+    }
+
+    public Config downloaderFilterClasses(List<String> downloaderFilterClasses) {
+        this.downloaderFilterClasses = downloaderFilterClasses;
         return this;
     }
 

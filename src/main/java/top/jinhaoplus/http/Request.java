@@ -2,14 +2,15 @@ package top.jinhaoplus.http;
 
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import java.util.List;
 import java.util.Map;
 
-public class Request {
+public class Request extends EndPoint {
     private RequestMethod method = RequestMethod.GET;
     private String url;
-    private Map<String, Object> meta;
+    private Map<String, Object> meta = Maps.newHashMapWithExpectedSize(16);
     private List<RequestCookie> cookies = Lists.newArrayList();
     private List<RequestHeader> headers = Lists.newArrayList();
     private String entity;

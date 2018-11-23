@@ -13,7 +13,10 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import top.jinhaoplus.core.Config;
-import top.jinhaoplus.http.*;
+import top.jinhaoplus.http.Request;
+import top.jinhaoplus.http.RequestCookie;
+import top.jinhaoplus.http.RequestHeader;
+import top.jinhaoplus.http.Response;
 
 import java.util.List;
 
@@ -57,12 +60,13 @@ public class DefaultDownloader implements Downloder {
                 HttpEntity httpEntity = response.getEntity();
                 String resultText = EntityUtils.toString(httpEntity, DEFAULT_CHARSET);
                 System.out.println("resultText:" + resultText);
-                return new Response(statusCode, resultText, request);
+                return new Response(request).statusCode(statusCode).resultText(resultText);
             } else {
-                return new Response(statusCode, ResponseStatus.UNUSUAL, request);
+                throw new DownloaderException("[DefaultDownloader] download failed, statusCode=" + statusCode);
             }
         } catch (Exception e) {
-            throw new DownloaderException("[DefaultDownloader] httpRequest execute error: " + e.getMessage());
+            e.printStackTrace();
+            throw new DownloaderException("[DefaultDownloader] download throw exception: e=" + e.getMessage());
         }
     }
 

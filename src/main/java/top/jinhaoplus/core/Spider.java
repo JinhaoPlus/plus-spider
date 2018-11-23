@@ -15,12 +15,16 @@ public class Spider {
         this(new Config());
     }
 
-    public Spider(Config config) throws Exception {
-        this(config, Lists.newArrayList());
-    }
-
     public Spider(String startUrl) throws Exception {
         this(new Config(), startUrl);
+    }
+
+    public Spider(Request startRequest) throws Exception {
+        this(new Config(), startRequest);
+    }
+
+    public Spider(Config config) throws Exception {
+        this(config, Lists.newArrayList());
     }
 
     public Spider(Config config, String startUrl) throws Exception {

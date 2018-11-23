@@ -39,7 +39,7 @@ public class Engine {
         init();
     }
 
-    void init() throws Exception {
+    private void init() throws Exception {
         scheduler = SchedulerCreator.create(config);
         downloder = DownloaderCreator.create(config);
         downloadManager = new DownloadManager(downloder, config);
@@ -60,6 +60,7 @@ public class Engine {
             Request request = scheduler.poll();
             if (request != null) {
                 Response response = downloadManager.executeDownload(request);
+                System.out.println(response.responseStatus());
             } else if (scheduler.isEmpty()) {
                 System.out.println("close");
                 break;

@@ -1,32 +1,54 @@
 package top.jinhaoplus.downloader;
 
+import com.google.common.collect.Lists;
 import top.jinhaoplus.core.Config;
+import top.jinhaoplus.http.EndPoint;
+import top.jinhaoplus.http.ErrorResponse;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.Response;
-import top.jinhaoplus.http.ResponseStatus;
+
+import java.util.List;
 
 public class DownloadManager {
 
     private Downloder downloder;
 
-    private int maxRetryTimes;
+    private List<DownloadFilter> downloadFilterChain = Lists.newArrayList();
 
-    public DownloadManager(Downloder downloder, Config config) {
+    public DownloadManager(Downloder downloder, Config config) throws DownloaderException {
         this.downloder = downloder;
-        this.maxRetryTimes = Integer.valueOf(config.maxRetryTimes());
-    }
-
-    public Response executeDownload(Request request) {
-        for (int i = 0; i < maxRetryTimes; i++) {
+        List<String> downloaderFilterClasses = config.downloaderFilterClasses();
+        for (String downloaderFilterClassStr : downloaderFilterClasses) {
             try {
-                Response response = downloder.download(request);
-                if (ResponseStatus.SUCCESS == response.responseStatus()) {
-                    return response;
+                Class<?> downloaderFilterClass = Class.forName(downloaderFilterClassStr);
+                if (DownloadFilter.class.isAssignableFrom(downloaderFilterClass)) {
+                    downloadFilterChain.add((DownloadFilter) downloaderFilterClass.newInstance());
+                } else {
+                    throw new DownloaderException("downloadFilter: " + downloaderFilterClassStr + " init error");
                 }
-            } catch (DownloaderException e) {
-                return new Response(ResponseStatus.EXCEPTION, request);
+            } catch (Exception e) {
+                throw new DownloaderException("[DownloadManager] DownloadManager init error: " + e);
             }
         }
-        return new Response(ResponseStatus.OUT_OF_RETRY, request);
+    }
+
+    public EndPoint executeDownload(Request request) {
+        for (DownloadFilter downloadFilter : downloadFilterChain) {
+            if (!downloadFilter.filterBefore(request)) {
+                return new ErrorResponse(request).error("");
+            }
+        }
+        Response response;
+        try {
+            response = downloder.download(request);
+        } catch (DownloaderException e) {
+            response = new ErrorResponse(request).error(e.getMessage());
+        }
+        for (DownloadFilter downloadFilter : downloadFilterChain) {
+            if (!downloadFilter.filterAfter(response)) {
+                return new ErrorResponse(request).error("");
+            }
+        }
+        return response;
     }
 }
