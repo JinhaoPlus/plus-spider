@@ -1,6 +1,6 @@
 package top.jinhaoplus.scheduler;
 
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 
 public class SchedulerCreator {
     public static Scheduler create(Config config) throws SchedulerException {

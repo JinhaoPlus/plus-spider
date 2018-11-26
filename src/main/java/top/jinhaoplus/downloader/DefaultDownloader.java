@@ -1,70 +1,68 @@
 package top.jinhaoplus.downloader;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
-import top.jinhaoplus.core.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import top.jinhaoplus.config.Config;
+import top.jinhaoplus.http.ErrorResponse;
 import top.jinhaoplus.http.Request;
-import top.jinhaoplus.http.RequestCookie;
-import top.jinhaoplus.http.RequestHeader;
-import top.jinhaoplus.http.Response;
-
-import java.util.List;
 
 /**
  * @author jinhaoluo
  */
 public class DefaultDownloader implements Downloder {
 
-    private static final String DEFAULT_CHARSET = "UTF-8";
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDownloader.class);
+
     private HttpClient httpClient;
     private HttpClientBuilder builder;
 
     public DefaultDownloader(Config config) throws DownloaderException {
-        String connectionRequestTimeout = config.extraConfigs().getOrDefault("DefaultDownloader.connectionRequestTimeout", "10");
-        String connectTimeout = config.extraConfigs().getOrDefault("DefaultDownloader.ConnectTimeout", "10");
-        String maxConnTotal = config.extraConfigs().getOrDefault("DefaultDownloader.MaxConnTotal", "10");
+        int connectionRequestTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.connectionRequestTimeout", 10000);
+        int connectTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.connectTimeout", 10000);
+        int socketTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.socketTimeout", 10000);
+
+        int maxConnTotal = (int) config.extraConfigs().getOrDefault("DefaultDownloader.maxConnTotal", 10);
+        int maxPerRoute = (int) config.extraConfigs().getOrDefault("DefaultDownloader.maxPerRoute", 10);
+
         try {
             RequestConfig requestConfig = RequestConfig.custom()
-                    .setConnectionRequestTimeout(Integer.valueOf(connectionRequestTimeout))
-                    .setConnectTimeout(Integer.valueOf(connectTimeout))
+                    .setConnectionRequestTimeout(connectionRequestTimeout)
+                    .setConnectTimeout(connectTimeout)
+                    .setSocketTimeout(socketTimeout)
                     .build();
             builder = HttpClients.custom()
                     .setDefaultRequestConfig(requestConfig)
-                    .setMaxConnTotal(Integer.valueOf(maxConnTotal));
+                    .setMaxConnTotal(maxConnTotal)
+                    .setMaxConnPerRoute(maxPerRoute);
         } catch (Exception e) {
             throw new DownloaderException("[DefaultDownloader] DefaultDownloader init error" + e.getMessage());
         }
     }
 
     @Override
-    public Response download(Request request) throws DownloaderException {
+    public void download(Request request, DownloadCallback callback) {
         HttpUriRequest httpRequest = prepareClientAndRequest(request);
-        if (httpRequest == null) {
-            throw new DownloaderException("[DefaultDownloader] httpRequest convert error");
-        }
 
         try {
-            HttpResponse response = httpClient.execute(httpRequest);
-            int statusCode = response.getStatusLine().getStatusCode();
+            HttpResponse httpResponse = httpClient.execute(httpRequest);
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
             if (HttpStatus.SC_OK == statusCode) {
-                HttpEntity httpEntity = response.getEntity();
-                String resultText = EntityUtils.toString(httpEntity, DEFAULT_CHARSET);
-                return new Response(request).statusCode(statusCode).resultText(resultText);
+                callback.handleResponse(DownloadHelper.convertHttpResponse(httpResponse, request, statusCode));
             } else {
-                throw new DownloaderException("[DefaultDownloader] download failed, statusCode=" + statusCode);
+                LOGGER.error("download failed, statusCode={}", statusCode);
+                callback.handleResponse(new ErrorResponse(request).statusCode(statusCode));
             }
         } catch (Exception e) {
-            throw new DownloaderException("[DefaultDownloader] download throw exception: " + e.getMessage());
+            LOGGER.error("download throw exception: e={}", e.getMessage());
+            callback.handleResponse(new ErrorResponse(request));
         } finally {
             resetCookies();
         }
@@ -73,48 +71,11 @@ public class DefaultDownloader implements Downloder {
     private HttpUriRequest prepareClientAndRequest(Request request) {
         modifyCookies(request);
         httpClient = builder.build();
-        return convertHttpRequest(request);
+        return DownloadHelper.convertHttpRequest(request);
     }
 
     private void modifyCookies(Request request) {
-        List<RequestCookie> cookies = request.cookies();
-        if (cookies != null && cookies.size() > 0) {
-            BasicCookieStore cookieStore = new BasicCookieStore();
-            for (RequestCookie cookie : cookies) {
-                BasicClientCookie basicClientCookie = new BasicClientCookie(cookie.name(), cookie.value());
-                basicClientCookie.setDomain(cookie.domain());
-                basicClientCookie.setPath(cookie.path());
-                cookieStore.addCookie(basicClientCookie);
-            }
-            builder.setDefaultCookieStore(cookieStore);
-        }
-    }
-
-    private HttpUriRequest convertHttpRequest(Request request) {
-        HttpUriRequest httpRequest;
-        switch (request.method()) {
-            case GET:
-                httpRequest = new HttpGet(request.url());
-                break;
-            case POST:
-                httpRequest = new HttpPost(request.url());
-                break;
-            case PUT:
-                httpRequest = new HttpPut(request.url());
-                break;
-            case DELETE:
-                httpRequest = new HttpDelete(request.url());
-                break;
-            default:
-                return null;
-        }
-        List<RequestHeader> headers = request.headers();
-        if (headers != null && headers.size() > 0) {
-            for (RequestHeader header : headers) {
-                httpRequest.addHeader(new BasicHeader(header.name(), header.value()));
-            }
-        }
-        return httpRequest;
+        builder.setDefaultCookieStore(DownloadHelper.convertCookies(request));
     }
 
     private void resetCookies() {

@@ -3,9 +3,8 @@ package top.jinhaoplus.downloader;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 import top.jinhaoplus.http.EndPoint;
-import top.jinhaoplus.http.ErrorResponse;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.Response;
 
@@ -38,26 +37,14 @@ public class DownloadManager {
         }
     }
 
-    public EndPoint executeDownload(Request request) {
+    public void executeDownload(Request request, DownloadCallback callback) {
         for (DownloadFilter downloadFilter : downloadFilterChain) {
             EndPoint endPoint = downloadFilter.processRequest(request);
             if (endPoint instanceof Response) {
-                return endPoint;
+                return;
             }
         }
-        Response response;
-        try {
-            response = downloder.download(request);
-        } catch (DownloaderException e) {
-            LOGGER.error("[DownloadManager] download error, e={}", e.getMessage());
-            response = new ErrorResponse(request).error(e.getMessage());
-        }
-        for (DownloadFilter downloadFilter : downloadFilterChain) {
-            EndPoint endPoint = downloadFilter.processResponse(response);
-            if (endPoint instanceof Request) {
-                return endPoint;
-            }
-        }
-        return response;
+        callback.downloadFilterChain(downloadFilterChain);
+        downloder.download(request, callback);
     }
 }

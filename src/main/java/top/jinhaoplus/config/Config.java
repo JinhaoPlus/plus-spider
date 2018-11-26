@@ -1,4 +1,4 @@
-package top.jinhaoplus.core;
+package top.jinhaoplus.config;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -23,7 +23,7 @@ public class Config {
     private int interval;
     private String timeUnit;
     private int maxRetryTimes;
-    private Map<String, String> extraConfigs = Maps.newHashMapWithExpectedSize(16);
+    private Map<String, Object> extraConfigs = Maps.newHashMapWithExpectedSize(16);
 
     private Config() {
     }
@@ -123,16 +123,16 @@ public class Config {
         return this;
     }
 
-    public Map<String, String> extraConfigs() {
+    public Map<String, Object> extraConfigs() {
         return extraConfigs;
     }
 
-    public Config extraConfigs(Map<String, String> extraConfigs) {
+    public Config extraConfigs(Map<String, Object> extraConfigs) {
         this.extraConfigs = extraConfigs;
         return this;
     }
 
-    public Config addExtraConfigs(String configName, String configValue) {
+    public Config addExtraConfigs(String configName, Object configValue) {
         this.extraConfigs.put(configName, configValue);
         return this;
     }

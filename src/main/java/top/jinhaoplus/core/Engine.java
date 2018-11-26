@@ -3,12 +3,12 @@ package top.jinhaoplus.core;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.jinhaoplus.config.Config;
+import top.jinhaoplus.downloader.DownloadCallback;
 import top.jinhaoplus.downloader.DownloadManager;
 import top.jinhaoplus.downloader.DownloaderCreator;
 import top.jinhaoplus.downloader.Downloder;
-import top.jinhaoplus.http.EndPoint;
 import top.jinhaoplus.http.Request;
-import top.jinhaoplus.http.Response;
 import top.jinhaoplus.parser.Parser;
 import top.jinhaoplus.parser.ParserCreator;
 import top.jinhaoplus.pipeline.Pipeline;
@@ -63,15 +63,12 @@ public class Engine {
         while (true) {
             Request request = scheduler.poll();
             if (request != null) {
-                EndPoint endPoint = downloadManager.executeDownload(request);
-                if (endPoint instanceof Request) {
-                    scheduler.push(request);
-                } else if (endPoint instanceof Response) {
-                    Response response = (Response) endPoint;
-                    LOGGER.info("result=\n" + response.resultText());
-                }
+                downloadManager.executeDownload(
+                        request,
+                        new DownloadCallback(parser, scheduler, pipeline)
+                );
             } else if (scheduler.isEmpty()) {
-                LOGGER.info("\n[Engine] close engine ...", config.name());
+                LOGGER.info("\n[Engine]{} close engine ...", config.name());
                 break;
             }
         }

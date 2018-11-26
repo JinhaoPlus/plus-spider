@@ -1,6 +1,6 @@
 package top.jinhaoplus.parser;
 
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 
 public class ParserCreator {
     public static Parser create(Config config) throws ParserException {

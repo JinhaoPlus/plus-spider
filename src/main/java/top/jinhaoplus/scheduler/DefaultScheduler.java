@@ -3,7 +3,7 @@ package top.jinhaoplus.scheduler;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 import top.jinhaoplus.http.Request;
 
 import java.util.List;

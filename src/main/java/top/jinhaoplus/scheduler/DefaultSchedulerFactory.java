@@ -1,6 +1,6 @@
 package top.jinhaoplus.scheduler;
 
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 
 public class DefaultSchedulerFactory implements SchedulerFactory {
 

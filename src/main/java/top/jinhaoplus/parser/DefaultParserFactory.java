@@ -1,6 +1,6 @@
 package top.jinhaoplus.parser;
 
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 
 public class DefaultParserFactory implements ParserFactory {
     @Override

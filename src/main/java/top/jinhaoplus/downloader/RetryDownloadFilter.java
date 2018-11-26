@@ -2,7 +2,7 @@ package top.jinhaoplus.downloader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 import top.jinhaoplus.http.EndPoint;
 import top.jinhaoplus.http.ErrorResponse;
 import top.jinhaoplus.http.Request;
@@ -31,7 +31,7 @@ public class RetryDownloadFilter implements DownloadFilter {
             if (retryTimes < maxRetryTimes) {
                 retryTimes = retryTimes + 1;
                 request.meta().put(RETRY_TIMES_KEY, retryTimes);
-                LOGGER.debug("[RetryDownloadFilter] need to retry, retryTimes={}", retryTimes);
+                LOGGER.debug("need to retry, retryTimes={}", retryTimes);
                 return request;
             } else {
                 return response;

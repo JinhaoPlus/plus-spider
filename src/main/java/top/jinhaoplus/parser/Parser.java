@@ -1,8 +1,8 @@
 package top.jinhaoplus.parser;
 
 import top.jinhaoplus.core.Result;
-import top.jinhaoplus.http.Request;
+import top.jinhaoplus.http.Response;
 
 public interface Parser {
-    Result parse(Request request);
+    Result parse(Response response);
 }

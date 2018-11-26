@@ -2,11 +2,14 @@ package top.jinhaoplus.http;
 
 public class ErrorResponse extends Response {
 
-    public ErrorResponse(Request request) {
-        super(request);
-    }
+    private static final int ERROR_STATUS_CODE = 500;
 
     private String error;
+
+    public ErrorResponse(Request request) {
+        super(request);
+        super.statusCode(ERROR_STATUS_CODE);
+    }
 
     public String error() {
         return error;

@@ -1,6 +1,6 @@
 package top.jinhaoplus.downloader;
 
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 
 public class DownloaderCreator {
 

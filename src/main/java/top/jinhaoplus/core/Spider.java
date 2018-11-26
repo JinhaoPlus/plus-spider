@@ -1,6 +1,7 @@
 package top.jinhaoplus.core;
 
 import com.google.common.collect.Lists;
+import top.jinhaoplus.config.Config;
 import top.jinhaoplus.http.Request;
 
 import java.util.List;

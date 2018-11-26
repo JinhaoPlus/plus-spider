@@ -1,6 +1,6 @@
 package top.jinhaoplus.pipeline;
 
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 
 public class DefaultPipelineFactory implements PipelineFactory {
 

@@ -10,6 +10,13 @@ public class RequestCookie {
     private String domain;
     private String path;
 
+    public RequestCookie(String name, String value, String domain, String path) {
+        this.name = name;
+        this.value = value;
+        this.domain = domain;
+        this.path = path;
+    }
+
     public String name() {
         return name;
     }

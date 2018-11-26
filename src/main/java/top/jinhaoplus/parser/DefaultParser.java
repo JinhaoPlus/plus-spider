@@ -1,8 +1,8 @@
 package top.jinhaoplus.parser;
 
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 import top.jinhaoplus.core.Result;
-import top.jinhaoplus.http.Request;
+import top.jinhaoplus.http.Response;
 
 public class DefaultParser implements Parser {
 
@@ -10,7 +10,8 @@ public class DefaultParser implements Parser {
     }
 
     @Override
-    public Result parse(Request request) {
+    public Result parse(Response response) {
+        System.out.println("Parse:" + response.resultText());
         return null;
     }
 }

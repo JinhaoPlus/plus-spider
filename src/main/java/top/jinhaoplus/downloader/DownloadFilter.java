@@ -1,6 +1,6 @@
 package top.jinhaoplus.downloader;
 
-import top.jinhaoplus.core.Config;
+import top.jinhaoplus.config.Config;
 import top.jinhaoplus.http.EndPoint;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.Response;
