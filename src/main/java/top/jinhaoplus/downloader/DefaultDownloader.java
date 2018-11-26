@@ -59,14 +59,14 @@ public class DefaultDownloader implements Downloder {
             if (HttpStatus.SC_OK == statusCode) {
                 HttpEntity httpEntity = response.getEntity();
                 String resultText = EntityUtils.toString(httpEntity, DEFAULT_CHARSET);
-                System.out.println("resultText:" + resultText);
                 return new Response(request).statusCode(statusCode).resultText(resultText);
             } else {
                 throw new DownloaderException("[DefaultDownloader] download failed, statusCode=" + statusCode);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new DownloaderException("[DefaultDownloader] download throw exception: e=" + e.getMessage());
+            throw new DownloaderException("[DefaultDownloader] download throw exception: " + e.getMessage());
+        } finally {
+            resetCookies();
         }
     }
 
@@ -88,7 +88,6 @@ public class DefaultDownloader implements Downloder {
             }
             builder.setDefaultCookieStore(cookieStore);
         }
-
     }
 
     private HttpUriRequest convertHttpRequest(Request request) {
@@ -116,5 +115,9 @@ public class DefaultDownloader implements Downloder {
             }
         }
         return httpRequest;
+    }
+
+    private void resetCookies() {
+        builder.setDefaultCookieStore(new BasicCookieStore());
     }
 }

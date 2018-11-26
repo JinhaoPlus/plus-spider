@@ -87,4 +87,9 @@ public class Request extends EndPoint {
         this.entity = entity;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return url;
+    }
 }

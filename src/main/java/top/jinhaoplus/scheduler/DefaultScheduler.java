@@ -1,6 +1,8 @@
 package top.jinhaoplus.scheduler;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.jinhaoplus.core.Config;
 import top.jinhaoplus.http.Request;
 
@@ -11,6 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 public class DefaultScheduler implements Scheduler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultScheduler.class);
+
     private BlockingDeque<Request> deque = new LinkedBlockingDeque<>();
 
     private long interval;
@@ -18,7 +22,7 @@ public class DefaultScheduler implements Scheduler {
 
 
     public DefaultScheduler(Config config) {
-        interval = Long.valueOf(config.interval());
+        interval = config.interval();
         timeUnit = TimeUnit.valueOf(config.timeUnit());
     }
 
@@ -32,13 +36,16 @@ public class DefaultScheduler implements Scheduler {
 
     @Override
     public void push(Request request) {
+        LOGGER.debug("[↓]push request={}", request);
         deque.add(request);
     }
 
     @Override
     public Request poll() {
         Uninterruptibles.sleepUninterruptibly(interval, timeUnit);
-        return deque.poll();
+        Request request = deque.poll();
+        LOGGER.debug("[↑]poll request={}", request);
+        return request;
     }
 
     @Override

@@ -9,18 +9,16 @@ public class Spider {
 
     private Engine engine;
 
-    private Config config;
-
     public Spider() throws Exception {
-        this(new Config());
+        this(Config.defaultConfig());
     }
 
     public Spider(String startUrl) throws Exception {
-        this(new Config(), startUrl);
+        this(Config.defaultConfig(), startUrl);
     }
 
     public Spider(Request startRequest) throws Exception {
-        this(new Config(), startRequest);
+        this(Config.defaultConfig(), startRequest);
     }
 
     public Spider(Config config) throws Exception {
@@ -36,7 +34,6 @@ public class Spider {
     }
 
     public Spider(Config config, List<Request> startRequests) throws Exception {
-        this.config = config;
         this.engine = new Engine(config, startRequests);
     }
 

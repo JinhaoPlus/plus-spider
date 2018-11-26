@@ -2,34 +2,53 @@ package top.jinhaoplus.core;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.RandomStringUtils;
+import top.jinhaoplus.downloader.DefaultDownloaderFactory;
+import top.jinhaoplus.downloader.RetryDownloadFilter;
+import top.jinhaoplus.parser.DefaultParserFactory;
+import top.jinhaoplus.pipeline.DefaultPipelineFactory;
+import top.jinhaoplus.scheduler.DefaultSchedulerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class Config {
+    private String name;
     private String schedulerFactoryClass;
     private String downloaderFactoryClass;
     private List<String> downloaderFilterClasses = Lists.newArrayList();
     private String parserFactoryClass;
     private String pipelineFactoryClass;
-    private String interval;
+    private int interval;
     private String timeUnit;
-    private String maxRetryTimes;
+    private int maxRetryTimes;
     private Map<String, String> extraConfigs = Maps.newHashMapWithExpectedSize(16);
 
-    public Config() {
-        defaultConfig();
+    private Config() {
     }
 
-    private void defaultConfig() {
-        schedulerFactoryClass = "top.jinhaoplus.scheduler.DefaultSchedulerFactory";
-        downloaderFactoryClass = "top.jinhaoplus.downloader.DefaultDownloaderFactory";
-        downloaderFilterClasses = Lists.newArrayList("top.jinhaoplus.downloader.RetryDownloadFilter");
-        parserFactoryClass = "top.jinhaoplus.parser.DefaultParserFactory";
-        pipelineFactoryClass = "top.jinhaoplus.pipeline.DefaultPipelineFactory";
-        interval = "100";
-        timeUnit = "MILLISECONDS";
-        maxRetryTimes = "1";
+    public static Config defaultConfig() {
+        Config config = new Config();
+        config.name = RandomStringUtils.randomAlphabetic(10);
+        config.schedulerFactoryClass = DefaultSchedulerFactory.class.getName();
+        config.downloaderFactoryClass = DefaultDownloaderFactory.class.getName();
+        config.downloaderFilterClasses = Lists.newArrayList(RetryDownloadFilter.class.getName());
+        config.parserFactoryClass = DefaultParserFactory.class.getName();
+        config.pipelineFactoryClass = DefaultPipelineFactory.class.getName();
+        config.interval = 1000;
+        config.timeUnit = TimeUnit.MILLISECONDS.name();
+        config.maxRetryTimes = 3;
+        return config;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public Config name(String name) {
+        this.name = name;
+        return this;
     }
 
     public String schedulerFactoryClass() {
@@ -77,11 +96,11 @@ public class Config {
         return this;
     }
 
-    public String interval() {
+    public int interval() {
         return interval;
     }
 
-    public Config interval(String interval) {
+    public Config interval(int interval) {
         this.interval = interval;
         return this;
     }
@@ -95,11 +114,11 @@ public class Config {
         return this;
     }
 
-    public String maxRetryTimes() {
+    public int maxRetryTimes() {
         return maxRetryTimes;
     }
 
-    public Config maxRetryTimes(String maxRetryTimes) {
+    public Config maxRetryTimes(int maxRetryTimes) {
         this.maxRetryTimes = maxRetryTimes;
         return this;
     }

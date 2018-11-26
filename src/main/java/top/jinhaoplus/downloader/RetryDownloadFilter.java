@@ -1,35 +1,46 @@
 package top.jinhaoplus.downloader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.jinhaoplus.core.Config;
 import top.jinhaoplus.http.EndPoint;
+import top.jinhaoplus.http.ErrorResponse;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.Response;
 
 public class RetryDownloadFilter implements DownloadFilter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RetryDownloadFilter.class);
 
     private static final String RETRY_TIMES_KEY = "retryTimes";
 
     private int maxRetryTimes;
 
     @Override
-    public EndPoint filterBefore(Request request) {
-        Integer retryTimes = (Integer) request.meta().getOrDefault(RETRY_TIMES_KEY, 0);
-        System.out.println("下载第" + retryTimes + "次");
-        if (retryTimes <= maxRetryTimes) {
-            return request;
-        }
+    public EndPoint processRequest(Request request) {
         return request;
     }
 
     @Override
-    public EndPoint filterAfter(Response response) {
-        Integer retryTimes = (Integer) response.request().meta().getOrDefault(RETRY_TIMES_KEY, 0);
-        response.request().meta().put(RETRY_TIMES_KEY, retryTimes + 1);
-        return response;
+    public EndPoint processResponse(Response response) {
+        if (!(response instanceof ErrorResponse)) {
+            return response;
+        } else {
+            Request request = response.request();
+            Integer retryTimes = (Integer) request.meta().getOrDefault(RETRY_TIMES_KEY, 0);
+            if (retryTimes < maxRetryTimes) {
+                retryTimes = retryTimes + 1;
+                request.meta().put(RETRY_TIMES_KEY, retryTimes);
+                LOGGER.debug("[RetryDownloadFilter] need to retry, retryTimes={}", retryTimes);
+                return request;
+            } else {
+                return response;
+            }
+        }
     }
 
     @Override
     public void config(Config config) {
-        maxRetryTimes = Integer.valueOf(config.maxRetryTimes());
+        maxRetryTimes = config.maxRetryTimes();
     }
 }

@@ -6,9 +6,10 @@ import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.Response;
 
 public interface DownloadFilter {
-    EndPoint filterBefore(Request request);
 
-    EndPoint filterAfter(Response response);
+    EndPoint processRequest(Request request);
+
+    EndPoint processResponse(Response response);
 
     void config(Config config);
 }

@@ -1,10 +1,12 @@
 package top.jinhaoplus.core;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Uninterruptibles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.jinhaoplus.downloader.DownloadManager;
 import top.jinhaoplus.downloader.DownloaderCreator;
 import top.jinhaoplus.downloader.Downloder;
+import top.jinhaoplus.http.EndPoint;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.Response;
 import top.jinhaoplus.parser.Parser;
@@ -15,9 +17,10 @@ import top.jinhaoplus.scheduler.Scheduler;
 import top.jinhaoplus.scheduler.SchedulerCreator;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class Engine {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Engine.class);
 
     private Config config;
 
@@ -56,20 +59,21 @@ public class Engine {
 
     private void startSchedule() {
 
+        LOGGER.info("\n[Engine]{} start engine ...", config.name());
         while (true) {
             Request request = scheduler.poll();
             if (request != null) {
-                Response response = downloadManager.executeDownload(request);
-                System.out.println(response.responseStatus());
+                EndPoint endPoint = downloadManager.executeDownload(request);
+                if (endPoint instanceof Request) {
+                    scheduler.push(request);
+                } else if (endPoint instanceof Response) {
+                    Response response = (Response) endPoint;
+                    LOGGER.info("result=\n" + response.resultText());
+                }
             } else if (scheduler.isEmpty()) {
-                System.out.println("close");
+                LOGGER.info("\n[Engine] close engine ...", config.name());
                 break;
             }
-            this.waitOneSecond();
         }
-    }
-
-    private void waitOneSecond() {
-        Uninterruptibles.sleepUninterruptibly(1L, TimeUnit.SECONDS);
     }
 }
