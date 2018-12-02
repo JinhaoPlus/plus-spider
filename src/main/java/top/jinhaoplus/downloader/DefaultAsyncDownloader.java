@@ -7,6 +7,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
@@ -22,6 +23,8 @@ import top.jinhaoplus.http.ErrorResponse;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.Response;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @author jinhaoluo
  */
@@ -33,7 +36,12 @@ public class DefaultAsyncDownloader implements Downloder {
     private HttpAsyncClient httpAsyncClient;
     private HttpAsyncClientBuilder builder;
 
+    private AtomicInteger downloadingCount = new AtomicInteger(0);
+    private int maxDownloadingCount;
+
     public DefaultAsyncDownloader(Config config) throws DownloaderException {
+
+        int maxDownloadingCount = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.maxDownloadingCount", 10);
 
         int connectionRequestTimeout = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.connectionRequestTimeout", 10000);
         int connectTimeout = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.connectTimeout", 10000);
@@ -44,6 +52,8 @@ public class DefaultAsyncDownloader implements Downloder {
         int maxPerRoute = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.maxPerRoute", 10);
 
         try {
+            this.maxDownloadingCount = maxDownloadingCount;
+
             RequestConfig requestConfig = RequestConfig.custom()
                     .setConnectionRequestTimeout(connectionRequestTimeout)
                     .setSocketTimeout(socketTimeout)
@@ -71,52 +81,75 @@ public class DefaultAsyncDownloader implements Downloder {
     @Override
     public void download(Request request, DownloadCallback callback) {
         HttpUriRequest httpRequest = prepareClientAndRequest(request);
+        downloadingCount.incrementAndGet();
 
         try {
+            LOGGER.debug("downloadingCount[+]=" + downloadingCount);
             httpAsyncClient.execute(httpRequest, new FutureCallback<HttpResponse>() {
                 @Override
                 public void completed(HttpResponse httpResponse) {
                     try {
                         int statusCode = httpResponse.getStatusLine().getStatusCode();
+                        Response response = new Response(request).statusCode(statusCode);
                         if (HttpStatus.SC_OK == statusCode) {
                             HttpEntity httpEntity = httpResponse.getEntity();
                             String resultText = EntityUtils.toString(httpEntity, DEFAULT_CHARSET);
-                            Response response = new Response(request).statusCode(statusCode).resultText(resultText);
+                            response = response.resultText(resultText);
                             callback.handleResponse(response);
                         } else {
                             LOGGER.error("download failed, statusCode={}", statusCode);
-                            callback.handleResponse(new ErrorResponse(request).statusCode(statusCode));
+                            callback.handleResponse(ErrorResponse.wrap(response));
                         }
                     } catch (Exception e) {
                         LOGGER.error("async download throw exception: e={}", e.getMessage());
-                        callback.handleResponse(new ErrorResponse(request));
+                        callback.handleResponse(new ErrorResponse(request).error("async download throw exception: e=" + e.getMessage()));
+                    } finally {
+                        downloadingCount.decrementAndGet();
+                        LOGGER.debug("downloadingCount[-]=" + downloadingCount);
                     }
                 }
 
                 @Override
                 public void failed(Exception e) {
                     LOGGER.error("async download failed: e={}", e.getMessage());
-                    callback.handleResponse(new ErrorResponse(request));
+                    callback.handleResponse(new ErrorResponse(request).error("async download failed: e=" + e.getMessage()));
+                    downloadingCount.decrementAndGet();
+                    LOGGER.debug("downloadingCount[-]=" + downloadingCount);
                 }
 
                 @Override
                 public void cancelled() {
                     LOGGER.error("async download cancelled");
-                    callback.handleResponse(new ErrorResponse(request));
+                    callback.handleResponse(new ErrorResponse(request).error("async download cancelled"));
+                    downloadingCount.decrementAndGet();
+                    LOGGER.debug("downloadingCount[-]=" + downloadingCount);
                 }
             });
         } catch (Exception e) {
             LOGGER.error("download throw exception: e={}", e.getMessage());
             callback.handleResponse(new ErrorResponse(request));
+            downloadingCount.decrementAndGet();
+            LOGGER.debug("downloadingCount[-]=" + downloadingCount);
         } finally {
             resetCookies();
         }
 
     }
 
+    @Override
+    public boolean hasDownloadCapacity() {
+        return downloadingCount.get() < maxDownloadingCount;
+    }
+
+    @Override
+    public boolean allDownloadFinished() {
+        return downloadingCount.get() == 0;
+    }
+
     private HttpUriRequest prepareClientAndRequest(Request request) {
         modifyCookies(request);
         httpAsyncClient = builder.build();
+        ((CloseableHttpAsyncClient) httpAsyncClient).start();
         return DownloadHelper.convertHttpRequest(request);
     }
 

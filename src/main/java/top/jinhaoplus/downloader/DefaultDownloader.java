@@ -24,6 +24,8 @@ public class DefaultDownloader implements Downloder {
     private HttpClient httpClient;
     private HttpClientBuilder builder;
 
+    private boolean downloading = false;
+
     public DefaultDownloader(Config config) throws DownloaderException {
         int connectionRequestTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.connectionRequestTimeout", 10000);
         int connectTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.connectTimeout", 10000);
@@ -64,11 +66,23 @@ public class DefaultDownloader implements Downloder {
             LOGGER.error("download throw exception: e={}", e.getMessage());
             callback.handleResponse(new ErrorResponse(request));
         } finally {
+            downloading = true;
             resetCookies();
         }
     }
 
+    @Override
+    public boolean hasDownloadCapacity() {
+        return true;
+    }
+
+    @Override
+    public boolean allDownloadFinished() {
+        return true;
+    }
+
     private HttpUriRequest prepareClientAndRequest(Request request) {
+        downloading = false;
         modifyCookies(request);
         httpClient = builder.build();
         return DownloadHelper.convertHttpRequest(request);

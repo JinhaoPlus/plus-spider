@@ -8,6 +8,8 @@ import top.jinhaoplus.downloader.DefaultAsyncDownloaderFactory;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.RequestCookie;
 
+import java.util.List;
+
 public class SpiderTest extends TestCase {
 
     public void testCrawl0() throws Exception {
@@ -55,8 +57,20 @@ public class SpiderTest extends TestCase {
     }
 
     public void testCrawl8() throws Exception {
-        new Spider(Config.defaultConfig().downloaderFactoryClass(DefaultAsyncDownloaderFactory.class.getName()), "https://www.baidu.com/").crawl();
+        new Spider(
+                Config.defaultConfig()
+                        .downloaderFactoryClass(DefaultAsyncDownloaderFactory.class.getName())
+                , "https://www.baidu.com").crawl();
     }
 
-
+    public void testCrawl9() throws Exception {
+        List<Request> requests = Lists.newArrayList();
+        for (int i = 0; i < 100; i++) {
+            requests.add(new Request("https://www.baidu.com/s?wd=" + i));
+        }
+        new Spider(
+                Config.defaultConfig()
+                        .downloaderFactoryClass(DefaultAsyncDownloaderFactory.class.getName())
+                , requests).crawl();
+    }
 }

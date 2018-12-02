@@ -11,6 +11,10 @@ public class ErrorResponse extends Response {
         super.statusCode(ERROR_STATUS_CODE);
     }
 
+    public static ErrorResponse wrap(Response response) {
+        return (ErrorResponse) new ErrorResponse(response.request()).statusCode(ERROR_STATUS_CODE);
+    }
+
     public String error() {
         return error;
     }

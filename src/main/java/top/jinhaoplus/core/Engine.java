@@ -1,6 +1,7 @@
 package top.jinhaoplus.core;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jinhaoplus.config.Config;
@@ -17,8 +18,9 @@ import top.jinhaoplus.scheduler.Scheduler;
 import top.jinhaoplus.scheduler.SchedulerCreator;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class Engine {
+class Engine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Engine.class);
 
@@ -38,7 +40,9 @@ public class Engine {
 
     Engine(Config config, List<Request> startRequests) throws Exception {
         this.config = config;
-        this.startRequests = startRequests;
+        if (startRequests != null && startRequests.size() > 0) {
+            this.startRequests = startRequests;
+        }
         init();
     }
 
@@ -61,16 +65,26 @@ public class Engine {
 
         LOGGER.info("\n[Engine]{} start engine ...", config.name());
         while (true) {
+            if (!downloder.hasDownloadCapacity()) {
+                waitOneSecond();
+                continue;
+            }
             Request request = scheduler.poll();
             if (request != null) {
                 downloadManager.executeDownload(
                         request,
                         new DownloadCallback(parser, scheduler, pipeline)
                 );
+            } else if (!downloder.allDownloadFinished()) {
+                waitOneSecond();
             } else if (scheduler.isEmpty()) {
                 LOGGER.info("\n[Engine]{} close engine ...", config.name());
                 break;
             }
         }
+    }
+
+    private void waitOneSecond() {
+        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }
 }
