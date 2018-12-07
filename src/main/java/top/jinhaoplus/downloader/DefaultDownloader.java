@@ -13,6 +13,7 @@ import top.jinhaoplus.downloader.helper.DownloadHelper;
 import top.jinhaoplus.http.ErrorResponse;
 import top.jinhaoplus.http.HttpRequestContext;
 import top.jinhaoplus.http.Request;
+import top.jinhaoplus.http.Response;
 
 /**
  * @author jinhaoluo
@@ -57,11 +58,12 @@ public class DefaultDownloader implements Downloder {
             downloading = true;
             HttpResponse httpResponse = httpClient.execute(httpRequestContext.httpRequest(), httpRequestContext.context());
             int statusCode = httpResponse.getStatusLine().getStatusCode();
+            Response response = new Response(request).statusCode(statusCode);
             if (HttpStatus.SC_OK == statusCode) {
                 callback.handleResponse(DownloadHelper.convertHttpResponse(httpResponse, request, statusCode));
             } else {
                 LOGGER.error("download failed, statusCode={}", statusCode);
-                callback.handleResponse(new ErrorResponse(request).statusCode(statusCode));
+                callback.handleResponse(ErrorResponse.wrap(response));
             }
         } catch (Exception e) {
             LOGGER.error("download throw exception: e={}", e.getMessage());

@@ -93,10 +93,9 @@ public class DefaultAsyncDownloader implements Downloder {
                                 int statusCode = httpResponse.getStatusLine().getStatusCode();
                                 Response response = new Response(request).statusCode(statusCode);
                                 if (HttpStatus.SC_OK == statusCode) {
-                                    response = DownloadHelper.convertHttpResponse(httpResponse, request, statusCode);
-                                    callback.handleResponse(response);
+                                    callback.handleResponse(DownloadHelper.convertHttpResponse(httpResponse, request, statusCode));
                                 } else {
-                                    LOGGER.error("download failed, statusCode={}", statusCode);
+                                    LOGGER.error("async download failed, statusCode={}", statusCode);
                                     callback.handleResponse(ErrorResponse.wrap(response));
                                 }
                             } catch (Exception e) {
