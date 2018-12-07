@@ -127,11 +127,9 @@ public class DefaultAsyncDownloader implements Downloder {
         } catch (Exception e) {
             LOGGER.error("download throw exception: e={}", e.getMessage());
             callback.handleResponse(new ErrorResponse(request));
+            downloadingCount.decrementAndGet();
             LOGGER.debug("downloadingCount[-]=" + downloadingCount);
-        } finally {
-
         }
-
     }
 
     @Override
