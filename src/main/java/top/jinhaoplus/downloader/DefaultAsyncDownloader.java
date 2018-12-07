@@ -90,7 +90,6 @@ public class DefaultAsyncDownloader implements Downloder {
                         @Override
                         public void completed(HttpResponse httpResponse) {
                             try {
-                                Thread.sleep(10000);
                                 int statusCode = httpResponse.getStatusLine().getStatusCode();
                                 Response response = new Response(request).statusCode(statusCode);
                                 if (HttpStatus.SC_OK == statusCode) {

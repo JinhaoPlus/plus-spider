@@ -65,7 +65,7 @@ public class SpiderTest extends TestCase {
 
     public void testCrawl9() throws Exception {
         List<Request> requests = Lists.newArrayList();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 8; i++) {
             requests.add(new Request("https://www.baidu.com/s?wd=" + i));
         }
         new Spider(
