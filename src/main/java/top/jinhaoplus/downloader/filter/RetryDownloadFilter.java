@@ -1,4 +1,4 @@
-package top.jinhaoplus.downloader;
+package top.jinhaoplus.downloader.filter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

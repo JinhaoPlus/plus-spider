@@ -4,14 +4,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jinhaoplus.config.Config;
+import top.jinhaoplus.downloader.helper.DownloadHelper;
 import top.jinhaoplus.http.ErrorResponse;
+import top.jinhaoplus.http.HttpRequestContext;
 import top.jinhaoplus.http.Request;
 
 /**
@@ -22,9 +22,8 @@ public class DefaultDownloader implements Downloder {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDownloader.class);
 
     private HttpClient httpClient;
-    private HttpClientBuilder builder;
 
-    private boolean downloading = false;
+    private volatile Boolean downloading = false;
 
     public DefaultDownloader(Config config) throws DownloaderException {
         int connectionRequestTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.connectionRequestTimeout", 10000);
@@ -40,10 +39,11 @@ public class DefaultDownloader implements Downloder {
                     .setConnectTimeout(connectTimeout)
                     .setSocketTimeout(socketTimeout)
                     .build();
-            builder = HttpClients.custom()
+            HttpClientBuilder builder = HttpClients.custom()
                     .setDefaultRequestConfig(requestConfig)
                     .setMaxConnTotal(maxConnTotal)
                     .setMaxConnPerRoute(maxPerRoute);
+            httpClient = builder.build();
         } catch (Exception e) {
             throw new DownloaderException("[DefaultDownloader] DefaultDownloader init error" + e.getMessage());
         }
@@ -51,10 +51,11 @@ public class DefaultDownloader implements Downloder {
 
     @Override
     public void download(Request request, DownloadCallback callback) {
-        HttpUriRequest httpRequest = prepareClientAndRequest(request);
+        HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request);
 
         try {
-            HttpResponse httpResponse = httpClient.execute(httpRequest);
+            downloading = true;
+            HttpResponse httpResponse = httpClient.execute(httpRequestContext.httpRequest(), httpRequestContext.context());
             int statusCode = httpResponse.getStatusLine().getStatusCode();
             if (HttpStatus.SC_OK == statusCode) {
                 callback.handleResponse(DownloadHelper.convertHttpResponse(httpResponse, request, statusCode));
@@ -66,33 +67,17 @@ public class DefaultDownloader implements Downloder {
             LOGGER.error("download throw exception: e={}", e.getMessage());
             callback.handleResponse(new ErrorResponse(request));
         } finally {
-            downloading = true;
-            resetCookies();
+            downloading = false;
         }
     }
 
     @Override
     public boolean hasDownloadCapacity() {
-        return true;
+        return !downloading;
     }
 
     @Override
     public boolean allDownloadFinished() {
-        return true;
-    }
-
-    private HttpUriRequest prepareClientAndRequest(Request request) {
-        downloading = false;
-        modifyCookies(request);
-        httpClient = builder.build();
-        return DownloadHelper.convertHttpRequest(request);
-    }
-
-    private void modifyCookies(Request request) {
-        builder.setDefaultCookieStore(DownloadHelper.convertCookies(request));
-    }
-
-    private void resetCookies() {
-        builder.setDefaultCookieStore(new BasicCookieStore());
+        return !downloading;
     }
 }

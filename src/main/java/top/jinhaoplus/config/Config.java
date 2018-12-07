@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.RandomStringUtils;
 import top.jinhaoplus.downloader.DefaultDownloaderFactory;
-import top.jinhaoplus.downloader.RetryDownloadFilter;
+import top.jinhaoplus.downloader.filter.RetryDownloadFilter;
 import top.jinhaoplus.parser.DefaultParserFactory;
 import top.jinhaoplus.pipeline.DefaultPipelineFactory;
 import top.jinhaoplus.scheduler.DefaultSchedulerFactory;

@@ -1,4 +1,4 @@
-package top.jinhaoplus.downloader;
+package top.jinhaoplus.downloader.filter;
 
 import top.jinhaoplus.config.Config;
 import top.jinhaoplus.http.EndPoint;

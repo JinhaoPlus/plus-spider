@@ -85,6 +85,6 @@ class Engine {
     }
 
     private void waitOneSecond() {
-        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+        Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
     }
 }

@@ -40,7 +40,7 @@ public class SpiderTest extends TestCase {
         new Spider(
                 Config.defaultConfig(),
                 new Request("https://weibo.com/JinhaoTek").addCookie(
-                        new RequestCookie("SUB", "_2A252_86eDeRhGeVM61YS8SrOyzyIHXVVjKdWrDV8PUNbmtAKLUfskW9NTMf7EALNxvvLllufc1iW_cB9PYs0ao1h", ".weibo.com", "/")
+                        new RequestCookie("SUB", "_2A25xDlz2DeRhGeVM61YS8SrOyzyIHXVSesk-rDV8PUNbmtAKLRDEkW9NTMf7EFNoG4_h3y02eDhBcRnSDSFdmlYe", ".weibo.com", "/")
                 )
         ).crawl();
     }
@@ -50,7 +50,7 @@ public class SpiderTest extends TestCase {
                 Config.defaultConfig(),
                 Lists.newArrayList(
                         new Request("https://weibo.com/JinhaoTek").addCookie(
-                                new RequestCookie("SUB", "_2A252_86eDeRhGeVM61YS8SrOyzyIHXVVjKdWrDV8PUNbmtAKLUfskW9NTMf7EALNxvvLllufc1iW_cB9PYs0ao1h", ".weibo.com", "/")
+                                new RequestCookie("SUB", "_2A25xDlz2DeRhGeVM61YS8SrOyzyIHXVSesk-rDV8PUNbmtAKLRDEkW9NTMf7EFNoG4_h3y02eDhBcRnSDSFdmlYe", ".weibo.com", "/")
                         ),
                         new Request("https://weibo.com/JinhaoTek"))
         ).crawl();
@@ -65,7 +65,7 @@ public class SpiderTest extends TestCase {
 
     public void testCrawl9() throws Exception {
         List<Request> requests = Lists.newArrayList();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             requests.add(new Request("https://www.baidu.com/s?wd=" + i));
         }
         new Spider(

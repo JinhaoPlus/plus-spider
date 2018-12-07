@@ -1,8 +1,9 @@
-package top.jinhaoplus.downloader;
+package top.jinhaoplus.downloader.helper;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.*;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicHeader;
@@ -14,6 +15,12 @@ import java.util.List;
 public class DownloadHelper {
 
     private static final String DEFAULT_CHARSET = "UTF-8";
+
+    public static HttpRequestContext prepareHttpRequest(Request request) {
+        HttpUriRequest httpUriRequest = convertHttpRequest(request);
+        HttpClientContext clientContext = prepareClientContext(request);
+        return new HttpRequestContext(httpUriRequest, clientContext);
+    }
 
     public static HttpUriRequest convertHttpRequest(Request request) {
         HttpUriRequest httpRequest;
@@ -42,7 +49,14 @@ public class DownloadHelper {
         return httpRequest;
     }
 
-    public static BasicCookieStore convertCookies(Request request) {
+    private static HttpClientContext prepareClientContext(Request request) {
+        BasicCookieStore cookieStore = convertCookies(request);
+        HttpClientContext context = HttpClientContext.create();
+        context.setCookieStore(cookieStore);
+        return context;
+    }
+
+    private static BasicCookieStore convertCookies(Request request) {
         BasicCookieStore cookieStore = new BasicCookieStore();
         List<RequestCookie> cookies = request.cookies();
         if (cookies != null && cookies.size() > 0) {

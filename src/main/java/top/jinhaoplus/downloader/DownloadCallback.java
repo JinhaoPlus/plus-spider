@@ -2,6 +2,7 @@ package top.jinhaoplus.downloader;
 
 import com.google.common.collect.Lists;
 import top.jinhaoplus.core.Result;
+import top.jinhaoplus.downloader.filter.DownloadFilter;
 import top.jinhaoplus.http.EndPoint;
 import top.jinhaoplus.http.ErrorResponse;
 import top.jinhaoplus.http.Request;
@@ -28,13 +29,8 @@ public class DownloadCallback {
         this.pipeline = pipeline;
     }
 
-    public List<DownloadFilter> downloadFilterChain() {
-        return downloadFilterChain;
-    }
-
-    public DownloadCallback downloadFilterChain(List<DownloadFilter> downloadFilterChain) {
+    public void downloadFilterChain(List<DownloadFilter> downloadFilterChain) {
         this.downloadFilterChain = downloadFilterChain;
-        return this;
     }
 
     public void handleResponse(Response response) {
