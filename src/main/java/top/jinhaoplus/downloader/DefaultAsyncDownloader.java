@@ -5,7 +5,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
@@ -32,7 +31,10 @@ public class DefaultAsyncDownloader implements Downloder {
 
     private HttpAsyncClient httpAsyncClient;
 
+    private RequestConfig requestConfig;
+
     private AtomicInteger downloadingCount = new AtomicInteger(0);
+
     private int maxDownloadingCount;
 
     public DefaultAsyncDownloader(Config config) throws DownloaderException {
@@ -50,11 +52,10 @@ public class DefaultAsyncDownloader implements Downloder {
         try {
             this.maxDownloadingCount = maxDownloadingCount;
 
-            RequestConfig requestConfig = RequestConfig.custom()
+            requestConfig = RequestConfig.custom()
                     .setConnectionRequestTimeout(connectionRequestTimeout)
                     .setSocketTimeout(socketTimeout)
-                    .setConnectTimeout(connectTimeout)
-                    .build();
+                    .setConnectTimeout(connectTimeout).build();
 
             IOReactorConfig ioReactorConfig = IOReactorConfig.custom().
                     setIoThreadCount(ioThreadCount)
@@ -66,10 +67,9 @@ public class DefaultAsyncDownloader implements Downloder {
             connManager.setMaxTotal(maxConnTotal);
             connManager.setDefaultMaxPerRoute(maxPerRoute);
 
-            HttpAsyncClientBuilder builder = HttpAsyncClients.custom()
+            httpAsyncClient = HttpAsyncClients.custom()
                     .setConnectionManager(connManager)
-                    .setDefaultRequestConfig(requestConfig);
-            httpAsyncClient = builder.build();
+                    .setDefaultRequestConfig(requestConfig).build();
             ((CloseableHttpAsyncClient) httpAsyncClient).start();
         } catch (Exception e) {
             throw new DownloaderException("[DefaultAsyncDownloader] DefaultAsyncDownloader init error" + e.getMessage());
@@ -77,8 +77,8 @@ public class DefaultAsyncDownloader implements Downloder {
     }
 
     @Override
-    public void download(Request request, DownloadCallback callback) {
-        HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request);
+    public void download(Request request, DownloadCallback callback) throws DownloaderException {
+        HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request, requestConfig);
         downloadingCount.incrementAndGet();
 
         try {

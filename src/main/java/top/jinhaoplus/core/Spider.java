@@ -2,6 +2,7 @@ package top.jinhaoplus.core;
 
 import com.google.common.collect.Lists;
 import top.jinhaoplus.config.Config;
+import top.jinhaoplus.downloader.DownloaderException;
 import top.jinhaoplus.http.Request;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public class Spider {
         this.engine = new Engine(config, startRequests);
     }
 
-    public void crawl() {
+    public void crawl() throws DownloaderException {
         engine.start();
     }
 }

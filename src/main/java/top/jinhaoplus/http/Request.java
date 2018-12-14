@@ -13,6 +13,7 @@ public class Request extends EndPoint {
     private Map<String, Object> meta = Maps.newHashMapWithExpectedSize(16);
     private List<RequestCookie> cookies = Lists.newArrayList();
     private List<RequestHeader> headers = Lists.newArrayList();
+    private Proxy proxy;
     private String entity;
 
     public Request(String url) {
@@ -85,6 +86,15 @@ public class Request extends EndPoint {
 
     public Request entity(String entity) {
         this.entity = entity;
+        return this;
+    }
+
+    public Proxy proxy() {
+        return proxy;
+    }
+
+    public Request proxy(Proxy proxy) {
+        this.proxy = proxy;
         return this;
     }
 

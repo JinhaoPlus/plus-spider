@@ -5,10 +5,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jinhaoplus.config.Config;
-import top.jinhaoplus.downloader.DownloadCallback;
-import top.jinhaoplus.downloader.DownloadManager;
-import top.jinhaoplus.downloader.DownloaderCreator;
-import top.jinhaoplus.downloader.Downloder;
+import top.jinhaoplus.downloader.*;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.parser.Parser;
 import top.jinhaoplus.parser.ParserCreator;
@@ -54,14 +51,14 @@ class Engine {
         pipeline = PipelineCreator.create(config);
     }
 
-    void start() {
+    void start() throws DownloaderException {
         if (startRequests != null && startRequests.size() > 0) {
             scheduler.batchPush(startRequests);
         }
         startSchedule();
     }
 
-    private void startSchedule() {
+    private void startSchedule() throws DownloaderException {
 
         LOGGER.info("\n[Engine]{} start engine ...", config.name());
         while (true) {

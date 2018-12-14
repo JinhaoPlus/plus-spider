@@ -24,6 +24,8 @@ public class DefaultDownloader implements Downloder {
 
     private HttpClient httpClient;
 
+    private RequestConfig requestConfig;
+
     private volatile Boolean downloading = false;
 
     public DefaultDownloader(Config config) throws DownloaderException {
@@ -35,7 +37,7 @@ public class DefaultDownloader implements Downloder {
         int maxPerRoute = (int) config.extraConfigs().getOrDefault("DefaultDownloader.maxPerRoute", 10);
 
         try {
-            RequestConfig requestConfig = RequestConfig.custom()
+            requestConfig = RequestConfig.custom()
                     .setConnectionRequestTimeout(connectionRequestTimeout)
                     .setConnectTimeout(connectTimeout)
                     .setSocketTimeout(socketTimeout)
@@ -51,8 +53,8 @@ public class DefaultDownloader implements Downloder {
     }
 
     @Override
-    public void download(Request request, DownloadCallback callback) {
-        HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request);
+    public void download(Request request, DownloadCallback callback) throws DownloaderException {
+        HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request, requestConfig);
 
         try {
             downloading = true;

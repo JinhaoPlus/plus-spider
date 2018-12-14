@@ -2,28 +2,31 @@ package top.jinhaoplus.downloader.helper;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import top.jinhaoplus.http.*;
-
-import java.util.List;
+import top.jinhaoplus.downloader.DownloaderException;
+import top.jinhaoplus.http.ErrorResponse;
+import top.jinhaoplus.http.HttpRequestContext;
+import top.jinhaoplus.http.Request;
+import top.jinhaoplus.http.Response;
 
 public class DownloadHelper {
 
     private static final String DEFAULT_CHARSET = "UTF-8";
 
-    public static HttpRequestContext prepareHttpRequest(Request request) {
-        HttpUriRequest httpUriRequest = convertHttpRequest(request);
+    public static HttpRequestContext prepareHttpRequest(Request request, RequestConfig requestConfig) throws DownloaderException {
+        HttpRequestBase httpRequest = initHttpRequest(request);
+        HttpHeaderHelper.convertHeaders(request, httpRequest);
+        HttpProxyHelper.modifyProxy(request, httpRequest, requestConfig);
         HttpClientContext clientContext = prepareClientContext(request);
-        return new HttpRequestContext(httpUriRequest, clientContext);
+        return new HttpRequestContext(httpRequest, clientContext);
     }
 
-    public static HttpUriRequest convertHttpRequest(Request request) {
-        HttpUriRequest httpRequest;
+    private static HttpRequestBase initHttpRequest(Request request) {
+        HttpRequestBase httpRequest = null;
         switch (request.method()) {
             case GET:
                 httpRequest = new HttpGet(request.url());
@@ -38,36 +41,16 @@ public class DownloadHelper {
                 httpRequest = new HttpDelete(request.url());
                 break;
             default:
-                return null;
-        }
-        List<RequestHeader> headers = request.headers();
-        if (headers != null && headers.size() > 0) {
-            for (RequestHeader header : headers) {
-                httpRequest.addHeader(new BasicHeader(header.name(), header.value()));
-            }
+                break;
         }
         return httpRequest;
     }
 
     private static HttpClientContext prepareClientContext(Request request) {
-        BasicCookieStore cookieStore = convertCookies(request);
+        BasicCookieStore cookieStore = HttpCookieHelper.convertCookies(request);
         HttpClientContext context = HttpClientContext.create();
         context.setCookieStore(cookieStore);
         return context;
-    }
-
-    private static BasicCookieStore convertCookies(Request request) {
-        BasicCookieStore cookieStore = new BasicCookieStore();
-        List<RequestCookie> cookies = request.cookies();
-        if (cookies != null && cookies.size() > 0) {
-            for (RequestCookie cookie : cookies) {
-                BasicClientCookie basicClientCookie = new BasicClientCookie(cookie.name(), cookie.value());
-                basicClientCookie.setDomain(cookie.domain());
-                basicClientCookie.setPath(cookie.path());
-                cookieStore.addCookie(basicClientCookie);
-            }
-        }
-        return cookieStore;
     }
 
     public static Response convertHttpResponse(HttpResponse httpResponse, Request request, int statusCode) {

@@ -73,4 +73,11 @@ public class SpiderTest extends TestCase {
                         .downloaderFactoryClass(DefaultAsyncDownloaderFactory.class.getName())
                 , requests).crawl();
     }
+
+    public void testCrawl10() throws Exception {
+        new Spider(
+                Config.defaultConfig(),
+                new Request("https://www.baidu.com")//.proxy(new Proxy("", 8411, "", ""))
+        ).crawl();
+    }
 }

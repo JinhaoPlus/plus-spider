@@ -38,7 +38,7 @@ public class DownloadManager {
         }
     }
 
-    public void executeDownload(Request request, DownloadCallback callback) {
+    public void executeDownload(Request request, DownloadCallback callback) throws DownloaderException {
         for (DownloadFilter downloadFilter : downloadFilterChain) {
             EndPoint endPoint = downloadFilter.processRequest(request);
             if (endPoint instanceof Response) {
