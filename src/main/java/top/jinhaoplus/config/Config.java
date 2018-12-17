@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.RandomStringUtils;
 import top.jinhaoplus.downloader.DefaultDownloaderFactory;
 import top.jinhaoplus.downloader.filter.RetryDownloadFilter;
+import top.jinhaoplus.http.Proxy;
 import top.jinhaoplus.parser.DefaultParserFactory;
 import top.jinhaoplus.pipeline.DefaultPipelineFactory;
 import top.jinhaoplus.scheduler.DefaultSchedulerFactory;
@@ -23,6 +24,7 @@ public class Config {
     private int interval;
     private String timeUnit;
     private int maxRetryTimes;
+    private Proxy proxyConfig;
     private Map<String, Object> extraConfigs = Maps.newHashMapWithExpectedSize(16);
 
     private Config() {
@@ -120,6 +122,15 @@ public class Config {
 
     public Config maxRetryTimes(int maxRetryTimes) {
         this.maxRetryTimes = maxRetryTimes;
+        return this;
+    }
+
+    public Proxy proxyConfig() {
+        return proxyConfig;
+    }
+
+    public Config proxyConfig(Proxy proxyConfig) {
+        this.proxyConfig = proxyConfig;
         return this;
     }
 

@@ -9,16 +9,13 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
-import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jinhaoplus.config.Config;
 import top.jinhaoplus.downloader.helper.DownloadHelper;
-import top.jinhaoplus.http.ErrorResponse;
-import top.jinhaoplus.http.HttpRequestContext;
-import top.jinhaoplus.http.Request;
-import top.jinhaoplus.http.Response;
+import top.jinhaoplus.downloader.helper.HttpProxyHelper;
+import top.jinhaoplus.http.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,7 +26,9 @@ public class DefaultAsyncDownloader implements Downloder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAsyncDownloader.class);
 
-    private HttpAsyncClient httpAsyncClient;
+    private CloseableHttpAsyncClient httpAsyncClient;
+
+    private Proxy proxyConfig;
 
     private RequestConfig requestConfig;
 
@@ -48,6 +47,8 @@ public class DefaultAsyncDownloader implements Downloder {
         int ioThreadCount = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.ioThreadCount", Runtime.getRuntime().availableProcessors());
         int maxConnTotal = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.maxConnTotal", 10);
         int maxPerRoute = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.maxPerRoute", 10);
+
+        this.proxyConfig = config.proxyConfig();
 
         try {
             this.maxDownloadingCount = maxDownloadingCount;
@@ -69,8 +70,10 @@ public class DefaultAsyncDownloader implements Downloder {
 
             httpAsyncClient = HttpAsyncClients.custom()
                     .setConnectionManager(connManager)
-                    .setDefaultRequestConfig(requestConfig).build();
-            ((CloseableHttpAsyncClient) httpAsyncClient).start();
+                    .setDefaultRequestConfig(requestConfig)
+                    .setDefaultCredentialsProvider(HttpProxyHelper.getProxyCredentials(proxyConfig))
+                    .build();
+            httpAsyncClient.start();
         } catch (Exception e) {
             throw new DownloaderException("[DefaultAsyncDownloader] DefaultAsyncDownloader init error" + e.getMessage());
         }
@@ -78,9 +81,8 @@ public class DefaultAsyncDownloader implements Downloder {
 
     @Override
     public void download(Request request, DownloadCallback callback) throws DownloaderException {
-        HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request, requestConfig);
+        HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request, proxyConfig, requestConfig);
         downloadingCount.incrementAndGet();
-
         try {
             LOGGER.debug("downloadingCount[+]=" + downloadingCount);
             httpAsyncClient.execute(

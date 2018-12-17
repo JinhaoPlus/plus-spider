@@ -29,11 +29,11 @@ public class DownloadCallback {
         this.pipeline = pipeline;
     }
 
-    public void downloadFilterChain(List<DownloadFilter> downloadFilterChain) {
+    void downloadFilterChain(List<DownloadFilter> downloadFilterChain) {
         this.downloadFilterChain = downloadFilterChain;
     }
 
-    public void handleResponse(Response response) {
+    void handleResponse(Response response) {
         if (!(response instanceof ErrorResponse)) {
             Result result = parser.parse(response);
             if (result != null) {

@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import junit.framework.TestCase;
 import top.jinhaoplus.config.Config;
 import top.jinhaoplus.downloader.DefaultAsyncDownloaderFactory;
+import top.jinhaoplus.http.Proxy;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.RequestCookie;
 
@@ -76,8 +77,18 @@ public class SpiderTest extends TestCase {
 
     public void testCrawl10() throws Exception {
         new Spider(
-                Config.defaultConfig(),
-                new Request("https://www.baidu.com")//.proxy(new Proxy("", 8411, "", ""))
+                Config.defaultConfig()
+                        .proxyConfig(new Proxy("", 8411, "", "")),
+                new Request("https://www.baidu.com")
+        ).crawl();
+    }
+
+    public void testCrawl11() throws Exception {
+        new Spider(
+                Config.defaultConfig()
+                        .downloaderFactoryClass(DefaultAsyncDownloaderFactory.class.getName())
+                        .proxyConfig(new Proxy("", 8411, "", "")),
+                new Request("https://www.baidu.com")
         ).crawl();
     }
 }

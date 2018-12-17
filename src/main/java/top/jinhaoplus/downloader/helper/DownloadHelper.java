@@ -8,19 +8,16 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.util.EntityUtils;
 import top.jinhaoplus.downloader.DownloaderException;
-import top.jinhaoplus.http.ErrorResponse;
-import top.jinhaoplus.http.HttpRequestContext;
-import top.jinhaoplus.http.Request;
-import top.jinhaoplus.http.Response;
+import top.jinhaoplus.http.*;
 
 public class DownloadHelper {
 
     private static final String DEFAULT_CHARSET = "UTF-8";
 
-    public static HttpRequestContext prepareHttpRequest(Request request, RequestConfig requestConfig) throws DownloaderException {
+    public static HttpRequestContext prepareHttpRequest(Request request, Proxy proxyConfig, RequestConfig requestConfig) throws DownloaderException {
         HttpRequestBase httpRequest = initHttpRequest(request);
+        HttpProxyHelper.modifyProxy(httpRequest, proxyConfig, requestConfig);
         HttpHeaderHelper.convertHeaders(request, httpRequest);
-        HttpProxyHelper.modifyProxy(request, httpRequest, requestConfig);
         HttpClientContext clientContext = prepareClientContext(request);
         return new HttpRequestContext(httpRequest, clientContext);
     }

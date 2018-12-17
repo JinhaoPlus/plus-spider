@@ -10,25 +10,28 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import top.jinhaoplus.downloader.DownloaderException;
 import top.jinhaoplus.http.Proxy;
-import top.jinhaoplus.http.Request;
 
 public class HttpProxyHelper {
 
-    public static void modifyProxy(Request request, HttpRequestBase httpRequest, RequestConfig requestConfig) throws DownloaderException {
-        RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(requestConfig);
-        Proxy requestProxy = request.proxy();
-        if (requestProxy != null) {
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+    public static CredentialsProvider getProxyCredentials(Proxy proxyConfig) {
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        if (proxyConfig != null) {
             credsProvider.setCredentials(
-                    new AuthScope(AuthScope.ANY),
-                    new UsernamePasswordCredentials(requestProxy.credentialUsername(), requestProxy.credentialPassword())
+                    new AuthScope(proxyConfig.host(), proxyConfig.port()),
+                    new UsernamePasswordCredentials(proxyConfig.credentialUsername(), proxyConfig.credentialPassword())
             );
+        }
+        return credsProvider;
+    }
 
-            if (StringUtils.isBlank(requestProxy.host()) || requestProxy.port() == null) {
-                throw new DownloaderException("[HttpProxyHelper] proxy host address must need a host and a port");
+    public static void modifyProxy(HttpRequestBase httpRequest, Proxy proxyConfig, RequestConfig requestConfig) throws DownloaderException {
+        RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(requestConfig);
+        if (proxyConfig != null) {
+            if (StringUtils.isBlank(proxyConfig.host()) || proxyConfig.port() == null) {
+                throw new DownloaderException("[HttpProxyHelper] proxyConfig must contain a host and a port");
             }
-            HttpHost proxy = new HttpHost(requestProxy.host(), requestProxy.port());
-            RequestConfig config = requestConfigBuilder.setProxy(proxy).build();
+            HttpHost proxyHost = new HttpHost(proxyConfig.host(), proxyConfig.port());
+            RequestConfig config = requestConfigBuilder.setProxy(proxyHost).build();
             httpRequest.setConfig(config);
         }
     }

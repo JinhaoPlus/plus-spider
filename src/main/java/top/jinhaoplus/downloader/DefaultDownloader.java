@@ -10,10 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jinhaoplus.config.Config;
 import top.jinhaoplus.downloader.helper.DownloadHelper;
-import top.jinhaoplus.http.ErrorResponse;
-import top.jinhaoplus.http.HttpRequestContext;
-import top.jinhaoplus.http.Request;
-import top.jinhaoplus.http.Response;
+import top.jinhaoplus.downloader.helper.HttpProxyHelper;
+import top.jinhaoplus.http.*;
 
 /**
  * @author jinhaoluo
@@ -23,6 +21,8 @@ public class DefaultDownloader implements Downloder {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDownloader.class);
 
     private HttpClient httpClient;
+
+    private Proxy proxyConfig;
 
     private RequestConfig requestConfig;
 
@@ -36,6 +36,8 @@ public class DefaultDownloader implements Downloder {
         int maxConnTotal = (int) config.extraConfigs().getOrDefault("DefaultDownloader.maxConnTotal", 10);
         int maxPerRoute = (int) config.extraConfigs().getOrDefault("DefaultDownloader.maxPerRoute", 10);
 
+        this.proxyConfig = config.proxyConfig();
+
         try {
             requestConfig = RequestConfig.custom()
                     .setConnectionRequestTimeout(connectionRequestTimeout)
@@ -44,6 +46,7 @@ public class DefaultDownloader implements Downloder {
                     .build();
             HttpClientBuilder builder = HttpClients.custom()
                     .setDefaultRequestConfig(requestConfig)
+                    .setDefaultCredentialsProvider(HttpProxyHelper.getProxyCredentials(proxyConfig))
                     .setMaxConnTotal(maxConnTotal)
                     .setMaxConnPerRoute(maxPerRoute);
             httpClient = builder.build();
@@ -54,7 +57,7 @@ public class DefaultDownloader implements Downloder {
 
     @Override
     public void download(Request request, DownloadCallback callback) throws DownloaderException {
-        HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request, requestConfig);
+        HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request, proxyConfig, requestConfig);
 
         try {
             downloading = true;
