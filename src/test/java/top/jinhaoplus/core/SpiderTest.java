@@ -4,7 +4,8 @@ package top.jinhaoplus.core;
 import com.google.common.collect.Lists;
 import junit.framework.TestCase;
 import top.jinhaoplus.config.Config;
-import top.jinhaoplus.downloader.DefaultAsyncDownloaderFactory;
+import top.jinhaoplus.downloader.impl.DefaultAsyncDownloaderExtraConfigrator;
+import top.jinhaoplus.downloader.impl.DefaultAsyncDownloaderFactory;
 import top.jinhaoplus.http.Proxy;
 import top.jinhaoplus.http.Request;
 import top.jinhaoplus.http.RequestCookie;
@@ -66,7 +67,7 @@ public class SpiderTest extends TestCase {
 
     public void testCrawl9() throws Exception {
         List<Request> requests = Lists.newArrayList();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 16; i++) {
             requests.add(new Request("https://www.baidu.com/s?wd=" + i));
         }
         new Spider(
@@ -76,6 +77,18 @@ public class SpiderTest extends TestCase {
     }
 
     public void testCrawl10() throws Exception {
+        List<Request> requests = Lists.newArrayList();
+        for (int i = 0; i < 16; i++) {
+            requests.add(new Request("https://www.baidu.com/s?wd=" + i));
+        }
+        new Spider(
+                Config.defaultConfig()
+                        .downloaderFactoryClass(DefaultAsyncDownloaderFactory.class.getName())
+                        .extraConfig(DefaultAsyncDownloaderExtraConfigrator.IO_THREAD_COUNT, 10)
+                , requests).crawl();
+    }
+
+    public void testCrawl11() throws Exception {
         new Spider(
                 Config.defaultConfig()
                         .proxyConfig(new Proxy("", 8411, "", "")),
@@ -83,7 +96,7 @@ public class SpiderTest extends TestCase {
         ).crawl();
     }
 
-    public void testCrawl11() throws Exception {
+    public void testCrawl12() throws Exception {
         new Spider(
                 Config.defaultConfig()
                         .downloaderFactoryClass(DefaultAsyncDownloaderFactory.class.getName())

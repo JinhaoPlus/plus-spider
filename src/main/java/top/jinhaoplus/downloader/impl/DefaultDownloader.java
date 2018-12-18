@@ -1,4 +1,4 @@
-package top.jinhaoplus.downloader;
+package top.jinhaoplus.downloader.impl;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -9,6 +9,9 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jinhaoplus.config.Config;
+import top.jinhaoplus.downloader.DownloadCallback;
+import top.jinhaoplus.downloader.DownloaderException;
+import top.jinhaoplus.downloader.Downloder;
 import top.jinhaoplus.downloader.capacity.DownloadingCapacity;
 import top.jinhaoplus.downloader.helper.DownloadHelper;
 import top.jinhaoplus.downloader.helper.HttpProxyHelper;
@@ -30,12 +33,12 @@ public class DefaultDownloader implements Downloder {
     private DownloadingCapacity downloadingCapacity;
 
     public DefaultDownloader(Config config) throws DownloaderException {
-        int connectionRequestTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.connectionRequestTimeout", 10000);
-        int connectTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.connectTimeout", 10000);
-        int socketTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.socketTimeout", 10000);
+        int connectionRequestTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.CONNECTION_REQUEST_TIMEOUT);
+        int connectTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.CONNECT_TIMEOUT);
+        int socketTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.SOCKET_TIMEOUT);
 
-        int maxConnTotal = (int) config.extraConfigs().getOrDefault("DefaultDownloader.maxConnTotal", 10);
-        int maxPerRoute = (int) config.extraConfigs().getOrDefault("DefaultDownloader.maxPerRoute", 10);
+        int maxConnTotal = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.MAX_CONN_TOTAL);
+        int maxPerRoute = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.MAX_PER_ROUTE);
 
         proxyConfig = config.proxyConfig();
 

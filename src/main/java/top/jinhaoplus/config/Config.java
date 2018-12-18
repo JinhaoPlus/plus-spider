@@ -1,25 +1,23 @@
 package top.jinhaoplus.config;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.commons.lang3.RandomStringUtils;
-import top.jinhaoplus.downloader.DefaultDownloaderFactory;
 import top.jinhaoplus.downloader.capacity.DefaultDownloadingCapacity;
 import top.jinhaoplus.downloader.filter.RetryDownloadFilter;
+import top.jinhaoplus.downloader.impl.DefaultDownloaderFactory;
 import top.jinhaoplus.http.Proxy;
 import top.jinhaoplus.parser.DefaultParserFactory;
 import top.jinhaoplus.pipeline.DefaultPipelineFactory;
 import top.jinhaoplus.scheduler.DefaultSchedulerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Config {
     private String name;
     private String schedulerFactoryClass;
     private String downloaderFactoryClass;
-    private List<String> downloaderFilterClasses = Lists.newArrayList();
+    private List<String> downloaderFilterClasses;
     private String downloadingCapacityClass;
     private String parserFactoryClass;
     private String pipelineFactoryClass;
@@ -28,7 +26,7 @@ public class Config {
     private String timeUnit;
     private int maxRetryTimes;
     private Proxy proxyConfig;
-    private Map<String, Object> extraConfigs = Maps.newHashMapWithExpectedSize(16);
+    private ExtraConfig extraConfig;
 
     private Config() {
     }
@@ -46,6 +44,7 @@ public class Config {
         config.interval = 1000;
         config.timeUnit = TimeUnit.MILLISECONDS.name();
         config.maxRetryTimes = 3;
+        config.extraConfig = new ExtraConfig();
         return config;
     }
 
@@ -157,17 +156,17 @@ public class Config {
         return this;
     }
 
-    public Map<String, Object> extraConfigs() {
-        return extraConfigs;
+    public ExtraConfig extraConfig() {
+        return extraConfig;
     }
 
-    public Config extraConfigs(Map<String, Object> extraConfigs) {
-        this.extraConfigs = extraConfigs;
+    public Config extraConfig(String extraConfigName, Object extraConfigValue) {
+        this.extraConfig.set(extraConfigName, extraConfigValue);
         return this;
     }
 
-    public Config addExtraConfigs(String configName, Object configValue) {
-        this.extraConfigs.put(configName, configValue);
+    public Config extraConfig(ExtraConfig extraConfig) {
+        this.extraConfig = extraConfig;
         return this;
     }
 }

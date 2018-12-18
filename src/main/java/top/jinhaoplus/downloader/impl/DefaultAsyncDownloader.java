@@ -1,4 +1,4 @@
-package top.jinhaoplus.downloader;
+package top.jinhaoplus.downloader.impl;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -13,6 +13,9 @@ import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jinhaoplus.config.Config;
+import top.jinhaoplus.downloader.DownloadCallback;
+import top.jinhaoplus.downloader.DownloaderException;
+import top.jinhaoplus.downloader.Downloder;
 import top.jinhaoplus.downloader.capacity.DownloadingCapacity;
 import top.jinhaoplus.downloader.helper.DownloadHelper;
 import top.jinhaoplus.downloader.helper.HttpProxyHelper;
@@ -35,13 +38,13 @@ public class DefaultAsyncDownloader implements Downloder {
 
     public DefaultAsyncDownloader(Config config) throws DownloaderException {
 
-        int connectionRequestTimeout = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.connectionRequestTimeout", 10000);
-        int connectTimeout = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.connectTimeout", 10000);
-        int socketTimeout = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.socketTimeout", 10000);
+        int connectionRequestTimeout = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.CONNECTION_REQUEST_TIMEOUT);
+        int connectTimeout = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.CONNECT_TIMEOUT);
+        int socketTimeout = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.SOCKET_TIMEOUT);
 
-        int ioThreadCount = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.ioThreadCount", Runtime.getRuntime().availableProcessors());
-        int maxConnTotal = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.maxConnTotal", 10);
-        int maxPerRoute = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.maxPerRoute", 10);
+        int ioThreadCount = (int) (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.IO_THREAD_COUNT);
+        int maxConnTotal = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.MAX_CONN_TOTAL);
+        int maxPerRoute = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.MAX_PER_ROUTE);
 
         proxyConfig = config.proxyConfig();
 
