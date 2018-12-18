@@ -33,12 +33,12 @@ public class DefaultDownloader implements Downloder {
     private DownloadingCapacity downloadingCapacity;
 
     public DefaultDownloader(Config config) throws DownloaderException {
-        int connectionRequestTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.CONNECTION_REQUEST_TIMEOUT);
-        int connectTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.CONNECT_TIMEOUT);
-        int socketTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.SOCKET_TIMEOUT);
+        int connectionRequestTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfigrator.CONNECTION_REQUEST_TIMEOUT);
+        int connectTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfigrator.CONNECT_TIMEOUT);
+        int socketTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfigrator.SOCKET_TIMEOUT);
 
-        int maxConnTotal = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.MAX_CONN_TOTAL);
-        int maxPerRoute = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.MAX_PER_ROUTE);
+        int maxConnTotal = (int) config.extraConfig().get(DefaultDownloaderExtraConfigrator.MAX_CONN_TOTAL);
+        int maxPerRoute = (int) config.extraConfig().get(DefaultDownloaderExtraConfigrator.MAX_PER_ROUTE);
 
         proxyConfig = config.proxyConfig();
 
@@ -55,7 +55,7 @@ public class DefaultDownloader implements Downloder {
                     .setMaxConnPerRoute(maxPerRoute);
             httpClient = builder.build();
         } catch (Exception e) {
-            throw new DownloaderException("[DefaultDownloader] DefaultDownloader init error" + e.getMessage());
+            throw new DownloaderException("[DefaultDownloader] DefaultDownloader convertRequest error" + e.getMessage());
         }
     }
 

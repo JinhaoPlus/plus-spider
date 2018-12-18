@@ -30,10 +30,10 @@ public class DownloadManager {
                     downloadFilter.config(config);
                     downloadFilterChain.add(downloadFilter);
                 } else {
-                    throw new DownloaderException("[DownloadManager] downloadFilter: " + downloaderFilterClassStr + " init error");
+                    throw new DownloaderException("[DownloadManager] downloadFilter: " + downloaderFilterClassStr + " convertRequest error");
                 }
             } catch (Exception e) {
-                throw new DownloaderException("[DownloadManager] DownloadManager init error: " + e);
+                throw new DownloaderException("[DownloadManager] DownloadManager convertRequest error: " + e);
             }
         }
     }

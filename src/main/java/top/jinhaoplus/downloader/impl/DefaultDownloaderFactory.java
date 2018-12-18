@@ -8,8 +8,7 @@ import top.jinhaoplus.downloader.Downloder;
 public class DefaultDownloaderFactory implements DownloaderFactory {
     @Override
     public Downloder newInstance(Config config) throws DownloaderException {
-        DefaultDownloaderExtraConfig configurator = new DefaultDownloaderExtraConfig();
-        configurator.config(config.extraConfig());
+        DefaultDownloaderExtraConfigrator.config(config.extraConfig());
         return new DefaultDownloader(config);
     }
 }

@@ -12,10 +12,6 @@ public class ExtraConfig {
         this.extraConfigs = Maps.newHashMapWithExpectedSize(16);
     }
 
-    public void config() {
-
-    }
-
     public Object get(String extraConfigName) {
         return extraConfigs.get(extraConfigName);
     }

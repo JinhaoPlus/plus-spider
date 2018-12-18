@@ -3,8 +3,10 @@ package top.jinhaoplus.downloader.helper;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.util.EntityUtils;
 import top.jinhaoplus.downloader.DownloaderException;
@@ -23,22 +25,11 @@ public class DownloadHelper {
     }
 
     private static HttpRequestBase initHttpRequest(Request request) {
-        HttpRequestBase httpRequest = null;
-        switch (request.method()) {
-            case GET:
-                httpRequest = new HttpGet(request.url());
-                break;
-            case POST:
-                httpRequest = new HttpPost(request.url());
-                break;
-            case PUT:
-                httpRequest = new HttpPut(request.url());
-                break;
-            case DELETE:
-                httpRequest = new HttpDelete(request.url());
-                break;
-            default:
-                break;
+        HttpRequestBase httpRequest = HttpMethodHelper.convertRequest(request);
+        if (request.method().entityEnclosing) {
+            HttpEntityEnclosingRequestBase httpEntityEnclosingRequest = (HttpEntityEnclosingRequestBase) httpRequest;
+            httpEntityEnclosingRequest.setEntity(new StringEntity(request.entity(), DEFAULT_CHARSET));
+            return httpEntityEnclosingRequest;
         }
         return httpRequest;
     }
