@@ -4,7 +4,7 @@ package top.jinhaoplus.core;
 import com.google.common.collect.Lists;
 import junit.framework.TestCase;
 import top.jinhaoplus.config.Config;
-import top.jinhaoplus.downloader.impl.DefaultAsyncDownloaderExtraConfigrator;
+import top.jinhaoplus.downloader.impl.DefaultAsyncDownloaderExtraConfig;
 import top.jinhaoplus.downloader.impl.DefaultAsyncDownloaderFactory;
 import top.jinhaoplus.http.Proxy;
 import top.jinhaoplus.http.Request;
@@ -84,7 +84,7 @@ public class SpiderTest extends TestCase {
         new Spider(
                 Config.defaultConfig()
                         .downloaderFactoryClass(DefaultAsyncDownloaderFactory.class.getName())
-                        .extraConfig(DefaultAsyncDownloaderExtraConfigrator.IO_THREAD_COUNT, 10)
+                        .extraConfig(DefaultAsyncDownloaderExtraConfig.IO_THREAD_COUNT, 10)
                 , requests).crawl();
     }
 

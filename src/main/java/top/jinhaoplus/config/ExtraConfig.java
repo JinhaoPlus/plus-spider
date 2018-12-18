@@ -6,10 +6,14 @@ import java.util.Map;
 
 public class ExtraConfig {
 
-    private Map<String, Object> extraConfigs;
+    protected Map<String, Object> extraConfigs;
 
     public ExtraConfig() {
         this.extraConfigs = Maps.newHashMapWithExpectedSize(16);
+    }
+
+    public void config() {
+
     }
 
     public Object get(String extraConfigName) {

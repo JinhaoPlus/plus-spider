@@ -38,13 +38,13 @@ public class DefaultAsyncDownloader implements Downloder {
 
     public DefaultAsyncDownloader(Config config) throws DownloaderException {
 
-        int connectionRequestTimeout = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.CONNECTION_REQUEST_TIMEOUT);
-        int connectTimeout = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.CONNECT_TIMEOUT);
-        int socketTimeout = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.SOCKET_TIMEOUT);
+        int connectionRequestTimeout = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfig.CONNECTION_REQUEST_TIMEOUT);
+        int connectTimeout = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfig.CONNECT_TIMEOUT);
+        int socketTimeout = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfig.SOCKET_TIMEOUT);
 
-        int ioThreadCount = (int) (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.IO_THREAD_COUNT);
-        int maxConnTotal = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.MAX_CONN_TOTAL);
-        int maxPerRoute = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfigrator.MAX_PER_ROUTE);
+        int ioThreadCount = (int) (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfig.IO_THREAD_COUNT);
+        int maxConnTotal = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfig.MAX_CONN_TOTAL);
+        int maxPerRoute = (int) config.extraConfig().get(DefaultAsyncDownloaderExtraConfig.MAX_PER_ROUTE);
 
         proxyConfig = config.proxyConfig();
 

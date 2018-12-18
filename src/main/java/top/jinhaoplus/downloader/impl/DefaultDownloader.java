@@ -33,12 +33,12 @@ public class DefaultDownloader implements Downloder {
     private DownloadingCapacity downloadingCapacity;
 
     public DefaultDownloader(Config config) throws DownloaderException {
-        int connectionRequestTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.CONNECTION_REQUEST_TIMEOUT);
-        int connectTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.CONNECT_TIMEOUT);
-        int socketTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.SOCKET_TIMEOUT);
+        int connectionRequestTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.CONNECTION_REQUEST_TIMEOUT);
+        int connectTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.CONNECT_TIMEOUT);
+        int socketTimeout = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.SOCKET_TIMEOUT);
 
-        int maxConnTotal = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.MAX_CONN_TOTAL);
-        int maxPerRoute = (int) config.extraConfig().get(DefaultDownloaderExtraConfigurator.MAX_PER_ROUTE);
+        int maxConnTotal = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.MAX_CONN_TOTAL);
+        int maxPerRoute = (int) config.extraConfig().get(DefaultDownloaderExtraConfig.MAX_PER_ROUTE);
 
         proxyConfig = config.proxyConfig();
 
