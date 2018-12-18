@@ -9,6 +9,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jinhaoplus.config.Config;
+import top.jinhaoplus.downloader.capacity.DownloadingCapacity;
 import top.jinhaoplus.downloader.helper.DownloadHelper;
 import top.jinhaoplus.downloader.helper.HttpProxyHelper;
 import top.jinhaoplus.http.*;
@@ -26,7 +27,7 @@ public class DefaultDownloader implements Downloder {
 
     private RequestConfig requestConfig;
 
-    private volatile Boolean downloading = false;
+    private DownloadingCapacity downloadingCapacity;
 
     public DefaultDownloader(Config config) throws DownloaderException {
         int connectionRequestTimeout = (int) config.extraConfigs().getOrDefault("DefaultDownloader.connectionRequestTimeout", 10000);
@@ -36,7 +37,7 @@ public class DefaultDownloader implements Downloder {
         int maxConnTotal = (int) config.extraConfigs().getOrDefault("DefaultDownloader.maxConnTotal", 10);
         int maxPerRoute = (int) config.extraConfigs().getOrDefault("DefaultDownloader.maxPerRoute", 10);
 
-        this.proxyConfig = config.proxyConfig();
+        proxyConfig = config.proxyConfig();
 
         try {
             requestConfig = RequestConfig.custom()
@@ -60,7 +61,7 @@ public class DefaultDownloader implements Downloder {
         HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request, proxyConfig, requestConfig);
 
         try {
-            downloading = true;
+            downloadingCapacity.consume();
             HttpResponse httpResponse = httpClient.execute(httpRequestContext.httpRequest(), httpRequestContext.context());
             int statusCode = httpResponse.getStatusLine().getStatusCode();
             Response response = new Response(request).statusCode(statusCode);
@@ -74,17 +75,22 @@ public class DefaultDownloader implements Downloder {
             LOGGER.error("download throw exception: e={}", e.getMessage());
             callback.handleResponse(new ErrorResponse(request));
         } finally {
-            downloading = false;
+            downloadingCapacity.free();
         }
     }
 
     @Override
+    public void initDownloadCapacity(DownloadingCapacity downloadingCapacity) {
+        this.downloadingCapacity = downloadingCapacity;
+    }
+
+    @Override
     public boolean hasDownloadCapacity() {
-        return !downloading;
+        return downloadingCapacity.hasFreeCapacity();
     }
 
     @Override
     public boolean allDownloadFinished() {
-        return !downloading;
+        return downloadingCapacity.allCapacityFree();
     }
 }

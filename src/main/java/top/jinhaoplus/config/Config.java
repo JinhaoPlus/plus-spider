@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.RandomStringUtils;
 import top.jinhaoplus.downloader.DefaultDownloaderFactory;
+import top.jinhaoplus.downloader.capacity.DefaultDownloadingCapacity;
 import top.jinhaoplus.downloader.filter.RetryDownloadFilter;
 import top.jinhaoplus.http.Proxy;
 import top.jinhaoplus.parser.DefaultParserFactory;
@@ -19,8 +20,10 @@ public class Config {
     private String schedulerFactoryClass;
     private String downloaderFactoryClass;
     private List<String> downloaderFilterClasses = Lists.newArrayList();
+    private String downloadingCapacityClass;
     private String parserFactoryClass;
     private String pipelineFactoryClass;
+    private int maxDownloadingCapacity;
     private int interval;
     private String timeUnit;
     private int maxRetryTimes;
@@ -35,9 +38,11 @@ public class Config {
         config.name = RandomStringUtils.randomAlphabetic(10);
         config.schedulerFactoryClass = DefaultSchedulerFactory.class.getName();
         config.downloaderFactoryClass = DefaultDownloaderFactory.class.getName();
+        config.downloadingCapacityClass = DefaultDownloadingCapacity.class.getName();
         config.downloaderFilterClasses = Lists.newArrayList(RetryDownloadFilter.class.getName());
         config.parserFactoryClass = DefaultParserFactory.class.getName();
         config.pipelineFactoryClass = DefaultPipelineFactory.class.getName();
+        config.maxDownloadingCapacity = 10;
         config.interval = 1000;
         config.timeUnit = TimeUnit.MILLISECONDS.name();
         config.maxRetryTimes = 3;
@@ -71,6 +76,15 @@ public class Config {
         return this;
     }
 
+    public String downloadingCapacityClass() {
+        return downloadingCapacityClass;
+    }
+
+    public Config downloadingCapacityClass(String downloadingCapacityClass) {
+        this.downloadingCapacityClass = downloadingCapacityClass;
+        return this;
+    }
+
     public List<String> downloaderFilterClasses() {
         return downloaderFilterClasses;
     }
@@ -95,6 +109,15 @@ public class Config {
 
     public Config pipelineFactoryClass(String pipelineConfig) {
         this.pipelineFactoryClass = pipelineConfig;
+        return this;
+    }
+
+    public int maxDownloadingCapacity() {
+        return maxDownloadingCapacity;
+    }
+
+    public Config maxDownloadingCapacity(int maxDownloadingCapacity) {
+        this.maxDownloadingCapacity = maxDownloadingCapacity;
         return this;
     }
 

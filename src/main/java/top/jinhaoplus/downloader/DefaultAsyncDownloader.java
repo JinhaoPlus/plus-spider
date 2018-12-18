@@ -13,11 +13,10 @@ import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.jinhaoplus.config.Config;
+import top.jinhaoplus.downloader.capacity.DownloadingCapacity;
 import top.jinhaoplus.downloader.helper.DownloadHelper;
 import top.jinhaoplus.downloader.helper.HttpProxyHelper;
 import top.jinhaoplus.http.*;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author jinhaoluo
@@ -32,13 +31,9 @@ public class DefaultAsyncDownloader implements Downloder {
 
     private RequestConfig requestConfig;
 
-    private AtomicInteger downloadingCount = new AtomicInteger(0);
-
-    private int maxDownloadingCount;
+    private DownloadingCapacity downloadingCapacity;
 
     public DefaultAsyncDownloader(Config config) throws DownloaderException {
-
-        int maxDownloadingCount = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.maxDownloadingCount", 10);
 
         int connectionRequestTimeout = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.connectionRequestTimeout", 10000);
         int connectTimeout = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.connectTimeout", 10000);
@@ -48,11 +43,9 @@ public class DefaultAsyncDownloader implements Downloder {
         int maxConnTotal = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.maxConnTotal", 10);
         int maxPerRoute = (int) config.extraConfigs().getOrDefault("DefaultAsyncDownloader.maxPerRoute", 10);
 
-        this.proxyConfig = config.proxyConfig();
+        proxyConfig = config.proxyConfig();
 
         try {
-            this.maxDownloadingCount = maxDownloadingCount;
-
             requestConfig = RequestConfig.custom()
                     .setConnectionRequestTimeout(connectionRequestTimeout)
                     .setSocketTimeout(socketTimeout)
@@ -82,9 +75,8 @@ public class DefaultAsyncDownloader implements Downloder {
     @Override
     public void download(Request request, DownloadCallback callback) throws DownloaderException {
         HttpRequestContext httpRequestContext = DownloadHelper.prepareHttpRequest(request, proxyConfig, requestConfig);
-        downloadingCount.incrementAndGet();
+        downloadingCapacity.consume();
         try {
-            LOGGER.debug("downloadingCount[+]=" + downloadingCount);
             httpAsyncClient.execute(
                     httpRequestContext.httpRequest(),
                     httpRequestContext.context(),
@@ -104,8 +96,7 @@ public class DefaultAsyncDownloader implements Downloder {
                                 LOGGER.error("async download throw exception: e={}", e.getMessage());
                                 callback.handleResponse(new ErrorResponse(request).error("async download throw exception: e=" + e.getMessage()));
                             } finally {
-                                downloadingCount.decrementAndGet();
-                                LOGGER.debug("downloadingCount[-]=" + downloadingCount);
+                                downloadingCapacity.free();
                             }
                         }
 
@@ -113,33 +104,36 @@ public class DefaultAsyncDownloader implements Downloder {
                         public void failed(Exception e) {
                             LOGGER.error("async download failed: e={}", e.getMessage());
                             callback.handleResponse(new ErrorResponse(request).error("async download failed: e=" + e.getMessage()));
-                            downloadingCount.decrementAndGet();
-                            LOGGER.debug("downloadingCount[-]=" + downloadingCount);
+                            downloadingCapacity.free();
                         }
 
                         @Override
                         public void cancelled() {
                             LOGGER.error("async download cancelled");
                             callback.handleResponse(new ErrorResponse(request).error("async download cancelled"));
-                            downloadingCount.decrementAndGet();
-                            LOGGER.debug("downloadingCount[-]=" + downloadingCount);
+                            downloadingCapacity.free();
                         }
                     });
         } catch (Exception e) {
             LOGGER.error("download throw exception: e={}", e.getMessage());
             callback.handleResponse(new ErrorResponse(request));
-            downloadingCount.decrementAndGet();
-            LOGGER.debug("downloadingCount[-]=" + downloadingCount);
+            downloadingCapacity.free();
         }
     }
 
     @Override
+    public void initDownloadCapacity(DownloadingCapacity downloadingCapacity) {
+        this.downloadingCapacity = downloadingCapacity;
+    }
+
+
+    @Override
     public boolean hasDownloadCapacity() {
-        return downloadingCount.get() < maxDownloadingCount;
+        return downloadingCapacity.hasFreeCapacity();
     }
 
     @Override
     public boolean allDownloadFinished() {
-        return downloadingCount.get() == 0;
+        return downloadingCapacity.allCapacityFree();
     }
 }
